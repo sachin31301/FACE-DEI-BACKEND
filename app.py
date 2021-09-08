@@ -31,11 +31,11 @@ CORS(app, support_credentials=True)
 
 
 # * ---------- DATABASE CONFIG --------- *
-DATABASE_USER = 'postgres'
-DATABASE_PASSWORD = 'sachindb'
-DATABASE_HOST = "postgres://xgkeclnubywrls:619e2f4c00ce4762653d849126a789a1ee3377c18002c5dd6ec7d5ef2ade8ade@ec2-107-20-24-247.compute-1.amazonaws.com:5432/dbrbsi2m64e7nu"
+DATABASE_USER = 'xgkeclnubywrls'
+DATABASE_PASSWORD = '619e2f4c00ce4762653d849126a789a1ee3377c18002c5dd6ec7d5ef2ade8ade'
+DATABASE_HOST = "ec2-107-20-24-247.compute-1.amazonaws.com"
 DATABASE_PORT = '5432'
-DATABASE_NAME = 'hobby-dev'
+DATABASE_NAME = 'dbrbsi2m64e7nu'
 
 
 def DATABASE_CONNECTION():
