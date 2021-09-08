@@ -33,9 +33,9 @@ CORS(app, support_credentials=True)
 # * ---------- DATABASE CONFIG --------- *
 DATABASE_USER = 'postgres'
 DATABASE_PASSWORD = 'sachindb'
-DATABASE_HOST = "127.0.0.1"
+DATABASE_HOST = "postgres://xgkeclnubywrls:619e2f4c00ce4762653d849126a789a1ee3377c18002c5dd6ec7d5ef2ade8ade@ec2-107-20-24-247.compute-1.amazonaws.com:5432/dbrbsi2m64e7nu"
 DATABASE_PORT = '5432'
-DATABASE_NAME = 'postgres'
+DATABASE_NAME = 'hobby-dev'
 
 
 def DATABASE_CONNECTION():
