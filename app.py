@@ -258,6 +258,8 @@ def imageshow():
         connection = DATABASE_CONNECTION()
         cursor = connection.cursor()
         print('condb')
+        os.environ['TZ'] = 'Asia/Kolkata'
+        time.tzset()
         datec=f'{time.localtime().tm_year}-{time.localtime().tm_mon}-{time.localtime().tm_mday}'
         timec=f'{time.localtime().tm_hour}:{time.localtime().tm_min}:{time.localtime().tm_sec}'
         prediction_credentials = ApiKeyCredentials(in_headers={"Prediction-key": prediction_key})
