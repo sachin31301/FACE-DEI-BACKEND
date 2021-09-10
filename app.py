@@ -305,7 +305,7 @@ def imageshow():
         cursor = connection.cursor()
         print('condb')
         os.environ['TZ'] = 'Asia/Kolkata'
-        #time.tzset()
+        time.tzset()
         mytime=time.localtime().tm_hour
         thisdict = {
         8: "programming",
