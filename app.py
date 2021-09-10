@@ -91,7 +91,7 @@ def get_receive_data():
                 json_data['picture_path'] = np.array(json_data['picture_array'])
 
                 # Create a new row for the user today:
-                insert_user_querry = f"INSERT INTO users (name, date, arrival_time, arrival_picture) VALUES ('{json_data['name']}', '{json_data['date']}', '{json_data['hour']}', '{json_data['picture_path']}')"
+                insert_user_querry = f"INSERT INTO schema (name, date, arrival_time, arrival_picture) VALUES ('{json_data['name']}', '{json_data['date']}', '{json_data['hour']}', '{json_data['picture_path']}')"
                 cursor.execute(insert_user_querry)
 
         except (Exception, psycopg2.DatabaseError) as error:
@@ -110,8 +110,10 @@ def get_receive_data():
 
 
 # * ---------- Get all the data of an employee ---------- *
-@app.route('/get_employee/<string:name>', methods=['GET'])
-def get_employee(name):
+@app.route('/get_employee', methods=['GET'])
+def get_employee():
+    name = request.args.get('name')
+    date = request.args.get('date')
     answer_to_send = {}
     # Check if the user is already in the DB
     try:
@@ -119,7 +121,8 @@ def get_employee(name):
         connection = DATABASE_CONNECTION()
         cursor = connection.cursor()
         # Query the DB to get all the data of a user:
-        user_information_sql_query = f"SELECT * FROM users WHERE name = '{name}'"
+        datec=f'{time.localtime().tm_year}-{time.localtime().tm_mon}-{time.localtime().tm_mday}'
+        user_information_sql_query = f"SELECT DISTINCT ON (subject) subject,arrival_time FROM schema WHERE name = '{name}' AND date='{date}'   "
 
         cursor.execute(user_information_sql_query)
         result = cursor.fetchall()
@@ -148,6 +151,46 @@ def get_employee(name):
     # Return the user's data to the front
     return jsonify(answer_to_send)
 
+@app.route('/get_subject', methods=['GET'])
+def get_subject():
+    subj = request.args.get('subj')
+    date = request.args.get('date')
+    subanswer_to_send = {}
+    # Check if the user is already in the DB
+    try:
+        # Connect to DB
+        connection = DATABASE_CONNECTION()
+        cursor = connection.cursor()
+        # Query the DB to get all the data of a user:
+        datec=f'{time.localtime().tm_year}-{time.localtime().tm_mon}-{time.localtime().tm_mday}'
+        user_information_sql_query = f"SELECT DISTINCT ON (name) name,arrival_time FROM schema WHERE subject = '{subj}'  AND date='{date}'    "
+
+        cursor.execute(user_information_sql_query)
+        subresult = cursor.fetchall()
+        connection.commit()
+
+        # if the user exist in the db:
+        if subresult:
+            print('RESULT: ',subresult)
+            # Structure the data and put the dates in string for the front
+            for k,v in enumerate(subresult):
+                subanswer_to_send[k] = {}
+                for ko,vo in enumerate(subresult[k]):
+                    subanswer_to_send[k][ko] = str(vo)
+            print('answer_to_send: ', subanswer_to_send)
+        else:
+            subanswer_to_send = {'error': 'User not found...'}
+
+    except (Exception, psycopg2.DatabaseError) as error:
+        print("ERROR DB: ", error)
+    finally:
+        # closing database connection:
+        if (connection):
+            cursor.close()
+            connection.close()
+
+    # Return the user's data to the front
+    return jsonify(subanswer_to_send)
 
 # * --------- Get the 5 last users seen by the camera --------- *
 @app.route('/get_5_last_entries', methods=['GET'])
@@ -160,7 +203,7 @@ def get_5_last_entries():
 
         cursor = connection.cursor()
         # Query the DB to get all the data of a user:
-        lasts_entries_sql_query = f"SELECT * FROM users ORDER BY id DESC LIMIT 2  ;"
+        lasts_entries_sql_query = f"SELECT * FROM schema ORDER BY id DESC LIMIT 2  ;"
 
         cursor.execute(lasts_entries_sql_query)
         result = cursor.fetchall()
@@ -251,6 +294,9 @@ def imageshow():
        # img = cv2.imdecode(npimg,cv2.IMREAD_COLOR)
         #img = Image.fromarray(img.astype("uint8"))
         #cv2.imshow(img)
+        connection = DATABASE_CONNECTION()
+        cursor = connection.cursor()
+        #cursor.execute(f"ALTER TABLE schema ADD COLUMN id SERIAL PRIMARY KEY")
         file_path = os.path.join(f"assets/img/users/res.jpg")
         file.save(file_path)
         print('hogya')
@@ -259,7 +305,26 @@ def imageshow():
         cursor = connection.cursor()
         print('condb')
         os.environ['TZ'] = 'Asia/Kolkata'
-        time.tzset()
+        #time.tzset()
+        mytime=time.localtime().tm_hour
+        thisdict = {
+        8: "programming",
+        9: "algorithms",
+        10: "mechanics",
+        11:"electronics",
+        12:"mathematics",
+        13:"electromagnetics",
+        14:"architecture",
+        15:"systems",
+        17:"production",
+        18:"Chemistry",
+        16:"thermodynamics",
+        20:"compiler",
+        21:"english",
+        22:"Devops"
+        }
+        subject=thisdict.get(mytime, "Lunch break")
+        print(subject)
         datec=f'{time.localtime().tm_year}-{time.localtime().tm_mon}-{time.localtime().tm_mday}'
         timec=f'{time.localtime().tm_hour}:{time.localtime().tm_min}:{time.localtime().tm_sec}'
         prediction_credentials = ApiKeyCredentials(in_headers={"Prediction-key": prediction_key})
@@ -269,7 +334,7 @@ def imageshow():
             projectid, publish_iteration_name, image_contents.read())
             predname=results.predictions[0].tag_name
 
-        insert_user_querry = f"INSERT INTO users (name, date, arrival_time) VALUES ('"+predname+"', '"+datec+"', '"+timec+"')"
+        insert_user_querry = f"INSERT INTO schema (name, date, arrival_time,subject) VALUES ('"+predname+"', '"+datec+"', '"+timec+"','"+subject+"')"
         cursor.execute(insert_user_querry)
     except (Exception, psycopg2.DatabaseError) as error:
         answer="rihana"
@@ -290,14 +355,19 @@ def hello_world():
     try:
         connection = DATABASE_CONNECTION()
         cursor = connection.cursor()
+        #cursor.execute(f"ALTER TABLE schema ADD COLUMN id SERIAL PRIMARY KEY")
         print('succesful')
-        create_table_query = '''CREATE TABLE users
+        #cursor.execute(f"ALTER TABLE users ADD COLUMN subject TEXT  ")
+        create_table_query = '''CREATE TABLE schema
           (name           TEXT     NOT NULL,
           date         date NOT NULL,
-          arrival_time TIME NOT NULL); '''
+          arrival_time TIME NOT NULL,
+          subject TEXT NOT NULL ); '''
     # Execute a command: this creates a new table
         cursor.execute(create_table_query)
-        cursor.execute(f"ALTER TABLE users ADD COLUMN id SERIAL PRIMARY KEY")
+        cursor.execute(f"ALTER TABLE schema ADD COLUMN id SERIAL PRIMARY KEY")
+        #cursor.execute(f"ALTER TABLE users ADD COLUMN subject TEXT ")
+        print("hogya")
         connection.commit()
     except (Exception, psycopg2.DatabaseError) as error:
         print("ERROR DB: ", error)
