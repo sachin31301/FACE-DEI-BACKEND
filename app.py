@@ -233,8 +233,83 @@ def get_subname():
     # Return the user's data to the front
     return jsonify(subanswer_to_send)
 
+@app.route('/get_subcount', methods=['GET'])
+def get_subcount():
+    subj = request.args.get('subj')
+    sname = request.args.get('sname')
+    
+    attcount=0
+    # Check if the user is already in the DB
+    try:
+        # Connect to DB
+        connection = DATABASE_CONNECTION()
+        cursor = connection.cursor()
+        # Query the DB to get all the data of a user:
+        datec=f'{time.localtime().tm_year}-{time.localtime().tm_mon}-{time.localtime().tm_mday}'
+        user_information_sql_query = f"SELECT COUNT(DISTINCT date)  FROM schema WHERE subject = '{subj}'  AND name='{sname}'    "
 
+        cursor.execute(user_information_sql_query)
+        attcount = cursor.fetchall()
+        connection.commit()
 
+        # if the user exist in the db:
+        if attcount:
+            print('RESULT: ',attcount)
+            # Structure the data and put the dates in string for the front
+            
+            print('answer_to_send: ', attcount)
+        else:
+            attcount = {'error': 'Student not found or 0 attendance...'}
+
+    except (Exception, psycopg2.DatabaseError) as error:
+        print("ERROR DB: ", error)
+    finally:
+        # closing database connection:
+        if (connection):
+            cursor.close()
+            connection.close()
+
+    # Return the user's data to the front
+    return jsonify(attcount)
+
+@app.route('/get_studcount', methods=['GET'])
+def get_studcount():
+    subj = request.args.get('subj')
+    date = request.args.get('date')
+    
+    attcount=0
+    # Check if the user is already in the DB
+    try:
+        # Connect to DB
+        connection = DATABASE_CONNECTION()
+        cursor = connection.cursor()
+        # Query the DB to get all the data of a user:
+        datec=f'{time.localtime().tm_year}-{time.localtime().tm_mon}-{time.localtime().tm_mday}'
+        user_information_sql_query = f"SELECT COUNT(DISTINCT name)  FROM schema WHERE subject = '{subj}'  AND date='{date}'    "
+
+        cursor.execute(user_information_sql_query)
+        attcount = cursor.fetchall()
+        connection.commit()
+
+        # if the user exist in the db:
+        if attcount:
+            print('RESULT: ',attcount)
+            # Structure the data and put the dates in string for the front
+            
+            print('answer_to_send: ', attcount)
+        else:
+            attcount = {'error': 'Student not found or 0 attendance...'}
+
+    except (Exception, psycopg2.DatabaseError) as error:
+        print("ERROR DB: ", error)
+    finally:
+        # closing database connection:
+        if (connection):
+            cursor.close()
+            connection.close()
+
+    # Return the user's data to the front
+    return jsonify(attcount)
 # * --------- Get the 5 last users seen by the camera --------- *
 @app.route('/get_5_last_entries', methods=['GET'])
 def get_5_last_entries():
