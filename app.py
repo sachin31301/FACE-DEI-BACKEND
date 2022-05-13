@@ -15,10 +15,10 @@ from azure.cognitiveservices.vision.customvision.training.models import ImageFil
 from msrest.authentication import ApiKeyCredentials
 import os, time, uuid
 
-projectid = "75f5bd51-949f-4616-8376-4a82a51b162a"
-publish_iteration_name = "Iteration3"
-ENDPOINT = "https://deiface.cognitiveservices.azure.com/"
-prediction_key = "7bb53499bc494fa09b32fb0c79188d49"
+projectid = "9af1fe4e-27d7-4ad2-bc7b-9c3695d1037e"
+publish_iteration_name = "Iteration1"
+ENDPOINT = "https://southcentralus.api.cognitive.microsoft.com/"
+prediction_key = "2a36140602b04ef2b71afcfdbfce251c"
 
 
 # Get the relativ path to this file (we will use it later)
@@ -451,7 +451,7 @@ def imageshow():
             results = predictor.classify_image(
             projectid, publish_iteration_name, image_contents.read())
             predname=results.predictions[0].tag_name
-
+        
         insert_user_querry = f"INSERT INTO schema (name, date, arrival_time,subject) VALUES ('"+predname+"', '"+datec+"', '"+timec+"','"+subject+"')"
         cursor.execute(insert_user_querry)
     except (Exception, psycopg2.DatabaseError) as error:
